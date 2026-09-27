@@ -1,17 +1,15 @@
 ---
-# Obsidian-specific: the fleet's cog-bump release.yml can't be used because Obsidian
-# needs an unprefixed tag equal to manifest.json's version, and reads that version
-# from the default branch. So the bump lands via PR (`bun run bump X.Y.Z`) and this
-# workflow tags + releases whenever main carries a manifest version with no release yet.
+# Obsidian reads the plugin version from manifest.json on the default branch and
+# needs an unprefixed tag equal to it, so release-please (not the fleet's tag-only
+# cog-bump) keeps a release PR that bumps manifest.json/package.json. Merging it
+# tags X.Y.Z and opens a draft release; `publish` attaches the build and only then
+# un-drafts it, so Obsidian never sees a version without assets.
 name: release
 
 on: # yamllint disable-line rule:truthy
   push:
     branches:
       - main
-    paths:
-      - manifest.json
-  workflow_dispatch:
 
 permissions: {}
 
@@ -20,7 +18,30 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  release:
+  release-please:
+    timeout-minutes: 10
+    runs-on: ubuntu-latest
+    permissions: {}
+    outputs:
+      release_created: ${{ steps.release.outputs.release_created }}
+      tag_name: ${{ steps.release.outputs.tag_name }}
+    steps:
+      # An app token, not GITHUB_TOKEN, so the release PR triggers the required CI checks.
+      - uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
+        id: app-token
+        with:
+          app-id: ${{ secrets.RELEASE_APP_ID }}
+          private-key: ${{ secrets.RELEASE_APP_PRIVATE_KEY }}
+          permission-contents: write
+          permission-pull-requests: write
+      - uses: googleapis/release-please-action@45996ed1f6d02564a971a2fa1b5860e934307cf7 # v5.0.0
+        id: release
+        with:
+          token: ${{ steps.app-token.outputs.token }}
+
+  publish:
+    needs: release-please
+    if: needs.release-please.outputs.release_created == 'true'
     timeout-minutes: 10
     runs-on: ubuntu-latest
     permissions:
@@ -30,23 +51,7 @@ jobs:
     steps:
       - uses: hugoh/gh-workflows/setup@fc872ebc6ac6bb28fa73a2e83f9f354faad9b5b7 # v1.40.6
 
-      - name: Check for an unreleased version
-        id: version
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: |
-          set -euo pipefail
-          version="$(jq -r .version manifest.json)"
-          test "$(jq -r .version package.json)" = "$version"
-          jq -e --arg v "$version" 'has($v)' versions.json > /dev/null
-          if gh release view "$version" > /dev/null 2>&1; then
-            echo "release $version already exists"
-          else
-            echo "version=$version" >> "$GITHUB_OUTPUT"
-          fi
-
       - name: Build
-        if: steps.version.outputs.version != ''
         run: |
           bun install --frozen-lockfile
           bun test
@@ -54,18 +59,13 @@ jobs:
           bun run build
 
       - uses: actions/attest@1e69f48acb82d1966a394da916b4c1698aa569d6 # v4.2.2
-        if: steps.version.outputs.version != ''
         with:
           subject-path: main.js
 
-      - name: Create release
-        if: steps.version.outputs.version != ''
+      - name: Upload assets and publish
         env:
           GH_TOKEN: ${{ github.token }}
-          VERSION: ${{ steps.version.outputs.version }}
+          TAG: ${{ needs.release-please.outputs.tag_name }}
         run: |
-          gh release create "$VERSION" \
-            --target "$GITHUB_SHA" \
-            --title "$VERSION" \
-            --generate-notes \
-            main.js manifest.json
+          gh release upload "$TAG" main.js manifest.json
+          gh release edit "$TAG" --draft=false --latest

@@ -89,15 +89,24 @@ linter, TypeScript and the tests.
 ## Releasing
 
 Obsidian requires the release tag to equal `manifest.json`'s `version` (with no
-`v` prefix), and it reads that version from the default branch. So:
+`v` prefix), and it reads that version from the default branch. Releases are
+driven by [release-please](https://github.com/googleapis/release-please) from
+[Conventional Commits](https://www.conventionalcommits.org):
 
-1. `bun run bump X.Y.Z` updates `manifest.json`, `package.json` and
-   `versions.json`. If you use a newer Obsidian API, raise `minAppVersion` in
-   `manifest.json` first.
-2. Open a PR titled `chore(release): X.Y.Z` and merge it.
-3. The [`release`](.github/workflows/release.yml) workflow sees an unreleased
-   version on `main`. It builds, attests provenance for `main.js`, tags `X.Y.Z`
-   and publishes a GitHub release with `main.js` and `manifest.json`.
+1. Merge `feat:` / `fix:` PRs as usual. release-please keeps a
+   `chore(main): release X.Y.Z` PR open that bumps `manifest.json` and
+   `package.json` and updates `CHANGELOG.md`.
+2. Merge the release PR when you want to ship. The
+   [`release`](.github/workflows/release.yml) workflow tags `X.Y.Z` and opens a
+   draft release. It then builds, attests provenance for `main.js`, attaches
+   `main.js` and `manifest.json`, and publishes the release.
+
+`versions.json` maps plugin versions to the oldest Obsidian they support. Add
+an entry only when you raise `minAppVersion` in `manifest.json`, in the same
+PR. The `obsidian_lint` step flags any API newer than `minAppVersion`.
+
+The release PR is opened with a GitHub App token (`RELEASE_APP_ID` /
+`RELEASE_APP_PRIVATE_KEY` secrets) so that CI runs on it.
 
 ## License
 
