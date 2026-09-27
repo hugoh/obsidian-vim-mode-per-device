@@ -105,8 +105,8 @@ driven by [release-please](https://github.com/googleapis/release-please) from
 an entry only when you raise `minAppVersion` in `manifest.json`, in the same
 PR. The `obsidian_lint` step flags any API newer than `minAppVersion`.
 
-The release PR is opened with a GitHub App token (`RELEASE_APP_ID` /
-`RELEASE_APP_PRIVATE_KEY` secrets) so that CI runs on it.
+The release PR is opened with a GitHub App token (`RELEASE_APP_CLIENT_ID` variable,
+`RELEASE_APP_PRIVATE_KEY` secret) so that CI runs on it.
 
 ## License
 
