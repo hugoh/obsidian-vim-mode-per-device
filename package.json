@@ -9,8 +9,7 @@
     "build": "tsc --noEmit && bun build src/main.ts --outfile main.js --format cjs --target browser --minify --external obsidian --external electron --external '@codemirror/*' --external '@lezer/*'",
     "dev": "bun build src/main.ts --outfile main.js --format cjs --target browser --sourcemap=inline --watch --external obsidian --external electron --external '@codemirror/*' --external '@lezer/*'",
     "lint": "eslint --max-warnings 0 .",
-    "test": "bun test",
-    "bump": "bun scripts/bump.ts"
+    "test": "bun test"
   },
   "devDependencies": {
     "@eslint/js": "^9",

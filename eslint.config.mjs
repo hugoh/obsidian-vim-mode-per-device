@@ -10,7 +10,6 @@ export default defineConfig(
     "package.json",
     "bun.lock",
     "tsconfig.json",
-    "scripts",
     "versions.json",
     "biome.json",
     ".renovaterc.json",
