@@ -2,7 +2,7 @@
   "name": "obsidian-vim-mode-per-device",
   "version": "1.0.0",
   "private": true,
-  "description": "Turn Obsidian's vim key bindings on or off per device type.",
+  "description": "Turn Obsidian's Vim key bindings on or off per device type.",
   "license": "MIT",
   "type": "module",
   "scripts": {
