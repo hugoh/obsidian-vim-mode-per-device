@@ -1,0 +1,45 @@
+amends "package://github.com/jdx/hk/releases/download/v2.0.0/hk@2.0.0#/Config.pkl"
+import "package://github.com/jdx/hk/releases/download/v2.0.0/hk@2.0.0#/Builtins.pkl"
+import "package://github.com/hugoh/hk-config/releases/download/v2.0.0/hk-config@2.0.0#/base.pkl" as Base
+
+min_hk_version = Base.min_hk_version
+
+local linters = new Mapping<String, Step> {
+    ...Base.base
+    // eslint-plugin-obsidianmd: the same rules the community-plugin review applies
+    ["obsidian_lint"] {
+        glob = List("src/**/*.ts", "manifest.json", "eslint.config.mjs", "package.json")
+        check = "bun run lint"
+    }
+    ["typecheck"] {
+        glob = List("**/*.ts", "tsconfig.json")
+        check = "bunx tsc --noEmit"
+    }
+    ["test"] {
+        glob = List("src/**/*.ts")
+        check = "bun test"
+    }
+}
+
+hooks {
+    ["pre-commit"] {
+        fix = true
+        stash = "git"
+        steps = linters
+    }
+    ["pre-push"] {
+        steps = linters
+    }
+    ["check"] {
+        steps = linters
+    }
+    ["fix"] {
+        fix = true
+        steps = linters
+    }
+    ["commit-msg"] {
+        steps = new Mapping<String, Step> {
+            ...Base.commit_msg
+        }
+    }
+}

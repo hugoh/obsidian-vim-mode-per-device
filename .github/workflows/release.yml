@@ -1,0 +1,71 @@
+---
+# Obsidian-specific: the fleet's cog-bump release.yml can't be used because Obsidian
+# needs an unprefixed tag equal to manifest.json's version, and reads that version
+# from the default branch. So the bump lands via PR (`bun run bump X.Y.Z`) and this
+# workflow tags + releases whenever main carries a manifest version with no release yet.
+name: release
+
+on: # yamllint disable-line rule:truthy
+  push:
+    branches:
+      - main
+    paths:
+      - manifest.json
+  workflow_dispatch:
+
+permissions: {}
+
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+jobs:
+  release:
+    timeout-minutes: 10
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      id-token: write
+      attestations: write
+    steps:
+      - uses: hugoh/gh-workflows/setup@fc872ebc6ac6bb28fa73a2e83f9f354faad9b5b7 # v1.40.6
+
+      - name: Check for an unreleased version
+        id: version
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          version="$(jq -r .version manifest.json)"
+          test "$(jq -r .version package.json)" = "$version"
+          jq -e --arg v "$version" 'has($v)' versions.json > /dev/null
+          if gh release view "$version" > /dev/null 2>&1; then
+            echo "release $version already exists"
+          else
+            echo "version=$version" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Build
+        if: steps.version.outputs.version != ''
+        run: |
+          bun install --frozen-lockfile
+          bun test
+          bun run lint
+          bun run build
+
+      - uses: actions/attest@1e69f48acb82d1966a394da916b4c1698aa569d6 # v4.2.2
+        if: steps.version.outputs.version != ''
+        with:
+          subject-path: main.js
+
+      - name: Create release
+        if: steps.version.outputs.version != ''
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          gh release create "$VERSION" \
+            --target "$GITHUB_SHA" \
+            --title "$VERSION" \
+            --generate-notes \
+            main.js manifest.json

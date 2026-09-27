@@ -1,0 +1,20 @@
+---
+name: hk
+
+on: # yamllint disable-line rule:truthy
+  push:
+    branches:
+      - main
+  pull_request:
+
+permissions: {}
+
+jobs:
+  hk:
+    uses: hugoh/gh-workflows/.github/workflows/hk.yml@fc872ebc6ac6bb28fa73a2e83f9f354faad9b5b7 # v1.40.6
+    permissions:
+      contents: read
+      packages: read
+      statuses: write
+    with:
+      pre-hk: bun install --frozen-lockfile

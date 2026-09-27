@@ -1,0 +1,26 @@
+{
+  "name": "obsidian-vim-mode-per-device",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Turn Obsidian's vim key bindings on or off per device type.",
+  "license": "MIT",
+  "type": "module",
+  "scripts": {
+    "build": "tsc --noEmit && bun build src/main.ts --outfile main.js --format cjs --target browser --minify --external obsidian --external electron --external '@codemirror/*' --external '@lezer/*'",
+    "dev": "bun build src/main.ts --outfile main.js --format cjs --target browser --sourcemap=inline --watch --external obsidian --external electron --external '@codemirror/*' --external '@lezer/*'",
+    "lint": "eslint --max-warnings 0 .",
+    "test": "bun test",
+    "bump": "bun scripts/bump.ts"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9",
+    "@eslint/json": "0.14.0",
+    "@types/bun": "^1.4.2",
+    "eslint": "^9",
+    "eslint-plugin-obsidianmd": "^0.4.2",
+    "globals": "^17.12.0",
+    "obsidian": "^1.13.1",
+    "typescript": "^5",
+    "typescript-eslint": "^8.70.1"
+  }
+}
