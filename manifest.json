@@ -3,7 +3,7 @@
   "name": "Vim Mode Per Device",
   "version": "1.0.0",
   "minAppVersion": "1.13.0",
-  "description": "Turn vim key bindings on or off depending on whether you are on desktop or mobile.",
+  "description": "Turn Vim key bindings on or off depending on whether you are on desktop or mobile.",
   "author": "Hugo Haas",
   "authorUrl": "https://github.com/hugoh",
   "isDesktopOnly": false
