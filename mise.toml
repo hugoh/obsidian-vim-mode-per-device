@@ -1,5 +1,5 @@
 [tools]
-hk = "2.0.0"
+hk = "2.1.0"
 uv = "0.12.10"
 actionlint = "1.7.12"
 pinact = "5.0.0"
@@ -10,5 +10,5 @@ typos = "1.50.1"
 rumdl = "0.2.65"
 biome = "2.5.10"
 tombi = "1.5.1"
-"github:owenlamont/ryl" = "0.21.0"
+"github:owenlamont/ryl" = "0.22.0"
 bun = "1.4.2"
