@@ -37,7 +37,7 @@ driven by [release-please](https://github.com/googleapis/release-please) from
    `chore(main): release X.Y.Z` PR open that bumps `manifest.json` and
    `package.json` and updates `CHANGELOG.md`.
 2. Merge the release PR when you want to ship. The
-   [`release`](.github/workflows/release.yml) workflow tags `X.Y.Z` and opens a
+   [`ci`](.github/workflows/ci.yml) workflow tags `X.Y.Z` and opens a
    draft release. It then builds, attests provenance for `main.js`, attaches
    `main.js` and `manifest.json`, and publishes the release.
 
